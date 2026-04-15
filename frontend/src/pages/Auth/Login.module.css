@@ -1,0 +1,247 @@
+.pageContainer {
+  --primary: #0984e3;
+  --primary-hover: #076bb8;
+  --dark-navy: #041e42;
+  --text-main: #1a1a1a;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  background-color: #ffffff;
+}
+
+/* --- LEFT SIDE: FORM --- */
+.formSide {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.formWrapper {
+  width: 100%;
+  max-width: 420px;
+}
+
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: var(--primary);
+  cursor: pointer;
+  margin-bottom: 4rem;
+}
+
+.header h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+}
+
+.header p {
+  color: var(--text-muted);
+  margin-bottom: 2.5rem;
+  font-size: 1rem;
+}
+
+.inputGroup {
+  margin-bottom: 1.5rem;
+}
+
+.inputGroup label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+  color: var(--text-main);
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 0 1rem;
+  transition: all 0.2s ease;
+}
+
+.inputWrapper:focus-within {
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 4px rgba(9, 132, 227, 0.1);
+}
+
+.inputWrapper input {
+  flex: 1;
+  padding: 0.85rem;
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+  background: transparent;
+}
+
+.icon { color: #94a3b8; }
+
+.eyeBtn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.optionsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  font-size: 0.85rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+/* LINK COLORS UPDATED TO MATCH PRIMARY BLUE */
+.forgotLink {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.forgotLink:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+.loginBtn {
+  width: 100%;
+  background-color: var(--primary);
+  color: white;
+  padding: 1rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 8px 15px rgba(9, 132, 227, 0.2);
+}
+
+.loginBtn:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+.divider {
+  text-align: center;
+  margin: 2rem 0;
+  position: relative;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 0; width: 100%; height: 1px; background: var(--border);
+}
+
+.divider span {
+  position: relative;
+  background: white;
+  padding: 0 1rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.googleBtn {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.googleBtn:hover { background: #f8fafc; }
+
+.footerText {
+  text-align: center;
+  margin-top: 2.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* REGISTER LINK COLOR UPDATED TO MATCH PRIMARY BLUE */
+.footerText a {
+  color: var(--primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.footerText a:hover {
+  text-decoration: underline;
+}
+
+/* --- RIGHT SIDE: VISUAL --- */
+.visualSide {
+  flex: 1.1;
+  background: linear-gradient(160deg, var(--dark-navy) 0%, var(--primary) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: white;
+}
+
+.visualContent {
+  text-align: left;
+  width: 100%;
+  max-width: 500px;
+}
+
+.headline {
+  font-size: 2.6rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+  letter-spacing: -1px;
+}
+
+.subheadline {
+  font-size: 1.1rem;
+  opacity: 0.85;
+  line-height: 1.6;
+  margin-bottom: 3rem;
+}
+
+.mainImg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.2));
+}
+
+/* --- RESPONSIVE --- */
+@media screen and (max-width: 900px) {
+  .visualSide { display: none; }
+  .formSide { padding: 2rem; }
+}

@@ -1,0 +1,133 @@
+.pageWrapper { 
+  display: flex; flex-direction: column; align-items: center; justify-content: center; 
+  min-height: calc(100vh - 150px); width: 100%; padding: 2rem 1rem; position: relative;
+}
+
+/* --- TOAST --- */
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); min-width: 340px; padding: 14px 20px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 15px 35px rgba(0,0,0,0.12); z-index: 10000; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.toastContent { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 0.95rem; }
+.closeToast { background: transparent; border: none; color: currentColor; opacity: 0.6; cursor: pointer; display: flex; }
+.success { background: rgba(16, 185, 129, 0.98); color: white; }
+.error { background: rgba(239, 68, 68, 0.98); color: white; }
+.info { background: rgba(30, 41, 59, 0.98); color: white; }
+
+/* --- MODAL --- */
+.modalOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+.confirmModal { background: white; width: 100%; max-width: 450px; padding: 3rem; border-radius: 28px; text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.15); }
+.modalActions { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+.confirmBtn { background: #dc2626; color: white; border: none; padding: 1.1rem; border-radius: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+.confirmBtn:hover { background: #b91c1c; transform: translateY(-2px); }
+.cancelBtn { background: #f8fafc; color: #475569; border: 1.5px solid #e2e8f0; padding: 1rem; border-radius: 14px; font-weight: 600; cursor: pointer; }
+
+/* --- MAIN TRAINING CARD --- */
+.mainCard { 
+  background: white; width: 100%; max-width: 950px; border-radius: 30px; 
+  border: 1px solid #eef2f6; box-shadow: 0 25px 60px rgba(0,0,0,0.06); 
+  position: relative; overflow: hidden; 
+}
+
+.shine { position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.6), transparent); transform: skewX(-25deg); animation: shine 6s infinite; pointer-events: none; z-index: 2; }
+@keyframes shine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+
+.cardLayout { display: flex; min-height: 550px; }
+
+/* GUIDE PANEL */
+.guideSide { 
+  flex: 0.8; background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); 
+  border-right: 1px solid #eef2f6; padding: 3.5rem 3rem; display: flex; flex-direction: column; 
+}
+
+.guideHeader { display: flex; align-items: center; gap: 12px; margin-bottom: 3rem; }
+.guideHeader h3 { font-size: 1.2rem; font-weight: 800; color: #1e293b; letter-spacing: -0.5px; }
+
+.instructionBox { flex: 1; }
+.instructionItem { display: flex; gap: 14px; margin-bottom: 2rem; align-items: flex-start; }
+.checkIcon { color: #0984e3; flex-shrink: 0; margin-top: 3px; }
+.instructionItem p { font-size: 0.95rem; color: #475569; line-height: 1.5; margin: 0; }
+.instructionItem b { color: #1e293b; }
+
+.securityBadge { 
+  margin-top: auto; display: flex; align-items: center; gap: 10px; background: white; 
+  padding: 12px 16px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; 
+  color: #94a3b8; border: 1px solid #eef2f6; 
+}
+
+/* UPLOAD PANEL */
+.uploadSide { flex: 1.2; padding: 3.5rem; display: flex; flex-direction: column; }
+.header h1 { font-size: 2rem; font-weight: 900; color: #1e293b; margin-bottom: 0.6rem; letter-spacing: -1px; }
+.header p { color: #64748b; font-size: 1rem; margin-bottom: 3rem; }
+
+.dropZone { 
+  flex: 1; border: 2.5px dashed #cbd5e1; border-radius: 24px; position: relative; 
+  display: flex; align-items: center; justify-content: center; transition: 0.3s; 
+  background: #f8fafc; 
+}
+.dropZone:hover { border-color: #0984e3; background: #f0f7ff; }
+.fileSelected { border-color: #0984e3; border-style: solid; background: white; box-shadow: 0 10px 20px rgba(9, 132, 227, 0.05); }
+
+.fileInput { position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 5; }
+.fileLabel { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1.2rem; }
+.iconCircle { 
+  width: 70px; height: 70px; background: white; border-radius: 50%; 
+  display: flex; align-items: center; justify-content: center; color: #0984e3; 
+  box-shadow: 0 8px 15px rgba(0,0,0,0.05); 
+}
+
+.prompt span { font-weight: 800; color: #1e293b; font-size: 1.1rem; }
+.prompt p { font-size: 0.85rem; color: #94a3b8; margin-top: 6px; }
+.fileName { font-weight: 800; color: #0984e3; font-size: 1.05rem; }
+
+.actionBtn { 
+  margin-top: 2.5rem; background: #1a1a1a; color: white; border: none; 
+  padding: 1.2rem; border-radius: 16px; font-weight: 800; font-size: 1.1rem; 
+  cursor: pointer; display: flex; align-items: center; justify-content: center; 
+  gap: 12px; transition: all 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+.actionBtn:hover { background: #0984e3; transform: translateY(-3px); box-shadow: 0 15px 40px rgba(9, 132, 227, 0.25); }
+.actionBtn:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* --- ACTIVE STATS DASHBOARD --- */
+.statsContainer { width: 100%; max-width: 1050px; animation: fadeIn 0.6s ease-out; }
+.statsHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+.statusText { color: #10b981; }
+
+.resetBtn { display: flex; align-items: center; gap: 8px; background: white; border: 1.5px solid #eef2f6; padding: 0.7rem 1.4rem; border-radius: 14px; font-weight: 700; color: #64748b; cursor: pointer; transition: 0.2s; }
+.resetBtn:hover { border-color: #ef4444; color: #ef4444; background: #fef2f2; }
+
+.kpiGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+.kpiCard { background: white; padding: 1.8rem; border-radius: 24px; border: 1.5px solid #eef2f6; display: flex; align-items: center; gap: 1.2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
+.kpiInfo h3 { font-size: 1.6rem; font-weight: 900; color: #1e293b; margin-top: 4px; }
+.kpiInfo small { text-transform: uppercase; font-size: 0.7rem; font-weight: 800; color: #94a3b8; letter-spacing: 1px; }
+
+.chartGrid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.5rem; min-height: 450px; }
+.chartCard { background: white; padding: 2.5rem; border-radius: 28px; border: 1.5px solid #eef2f6; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
+.chartCard h4 { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #64748b; margin-bottom: 2.5rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
+
+/* RECHARTS SIZING FIX */
+.radarWrapper { width: 100%; height: 350px; }
+.pieWrapper { width: 100%; min-height: 400px; display: flex; flex-direction: column; align-items: center; }
+
+.pieLegend { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 2rem; width: 100%; }
+.legendItem { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #f8fafc; border-radius: 10px; }
+.legendItem span { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.legendItem p { font-size: 0.85rem; font-weight: 700; color: #475569; margin: 0; }
+
+.loaderArea { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; color: #64748b; gap: 1rem; }
+.spin { animation: rotate 1s linear infinite; }
+
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+/* =========================================
+   MOBILE RESPONSIVENESS
+========================================= */
+@media (max-width: 950px) {
+  .chartGrid, .kpiGrid { grid-template-columns: 1fr; }
+  .cardLayout { flex-direction: column; }
+  .guideSide { border-right: none; border-bottom: 1px solid #eef2f6; padding: 2.5rem; }
+  .uploadSide { padding: 2.5rem; }
+  .mainCard { max-width: 100%; margin: 0; }
+  .statsHeader { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+  .resetBtn { width: 100%; justify-content: center; }
+  .pieWrapper { min-height: 450px; }
+}
