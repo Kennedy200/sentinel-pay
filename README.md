@@ -40,3 +40,42 @@ Nigeria loses over **₦12 Billion annually** to sophisticated fraud (SIM-swaps,
 - **Node.js:** 18+ (LTS)
 - **Memory:** 8GB RAM (Minimum for model loading)
 - **Environment:** Virtualenv (Backend)# sentinel-pay
+
+
+To start your backend, open your terminal (Git Bash) and run these commands in
+order:
+
+1. Activate the Backend
+
+# 1. Enter the backend folder
+cd backend
+
+# 2. Activate the virtual environment
+source venv/Scripts/activate
+
+# 3. Start the server
+python manage.py runserver
+
+(You should now see the (venv) prefix in your terminal and the message:
+"Starting development server at http://127.0.0.1:8000/")
+
+2. Start the Frontend (In a separate terminal)
+
+Don't forget to start your React app in another window so they can talk to each
+other:
+
+# 1. Enter the frontend folder
+cd frontend
+
+# 2. Start the Vite dev server
+npm run dev
+
+Quick Troubleshooting:
+
+  - If you get a "No module named django" error: Make sure you see (venv) at the
+    start of your terminal line. If not, the source command didn't work.
+  - If the server crashes on start: Check if you need to run migrations (python
+    manage.py migrate).
+
+You're back in business! Let me know if you need anything else. 🛡️🚀
+
