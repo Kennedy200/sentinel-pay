@@ -4,7 +4,7 @@ import json
 import pandas as pd
 import joblib
 import shutil
-import uuid  # ADDED THIS IMPORT TO FIX THE 500 ERROR
+import uuid
 from datetime import datetime
 from django.conf import settings
 from django.db.models import Count
@@ -46,16 +46,15 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         
-        # Create initial notification
         Notification.objects.create(
             user=user,
             title="Welcome to Sentinel-Pay",
-            message="Your account is active. Please upload history to enable AI protection.",
+            message="Account active. Please upload history to enable AI protection.",
             notif_type='system'
         )
         
         return Response({
-            "message": "User created successfully. Sentinel-Pay profile initialized.",
+            "message": "User created successfully.",
             "user": UserSerializer(user).data
         }, status=status.HTTP_201_CREATED)
 
@@ -110,7 +109,6 @@ class DNAUploadView(APIView):
                 destination.write(chunk)
 
         try:
-            # 1. Extract patterns and save to HistoricalTransaction table
             dna_data = extract_dna_from_file(path, request.user)
 
             if dna_data:
@@ -121,13 +119,12 @@ class DNAUploadView(APIView):
                 profile.is_profile_active = True
                 profile.save()
 
-                # 2. TRIGGER AI TRAINING
-                training_success = train_user_models(request.user)
+                train_user_models(request.user)
 
                 Notification.objects.create(
                     user=request.user,
                     title="DNA Profile Built",
-                    message="AI models have been trained on your history. Behavioral DNA protection is now active.",
+                    message="AI models have been trained. Behavioral protection is active.",
                     notif_type='system'
                 )
 
@@ -135,8 +132,7 @@ class DNAUploadView(APIView):
 
                 return Response({
                     "status": "success",
-                    "dna_stats": dna_data,
-                    "ai_trained": training_success
+                    "dna_stats": dna_data
                 }, status=status.HTTP_200_OK)
             
             return Response({"error": "Failed to parse history."}, status=400)
@@ -166,7 +162,7 @@ class ResetProfileView(APIView):
             profile.is_profile_active = False
             profile.save()
 
-            return Response({"message": "Behavioral DNA wiped. AI is now idle."}, status=200)
+            return Response({"message": "Behavioral DNA wiped."}, status=200)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
@@ -189,7 +185,7 @@ class TransactionAnalyzeView(APIView):
         local_iso_path = os.path.join(local_dir, 'iso_model.joblib')
 
         if not os.path.exists(global_model_path):
-            return Response({"error": "Global AI Knowledge Base not found."}, status=500)
+            return Response({"error": "Global Knowledge Base not found."}, status=500)
 
         try:
             input_df = pd.DataFrame([[amount, current_hour, merchant_risk_score]], columns=['amount', 'hour', 'merchant_risk'])
@@ -214,32 +210,30 @@ class TransactionAnalyzeView(APIView):
 
         if amount > (avg_hist * 10):
             rule_penalty += 0.45
-            explanations.append({"feature": "Limit", "impact": "CRITICAL", "reason": f"Extreme Spike: ₦{amount:,.0f} is 10x your average. Fraud signature detected."})
+            explanations.append({"feature": "Limit", "impact": "CRITICAL", "reason": f"Extreme Spike: ₦{amount:,.0f} is 10x your average."})
         elif amount > (avg_hist * 3):
             rule_penalty += 0.15
-            explanations.append({"feature": "Limit", "impact": "HIGH", "reason": f"Unusual Spike: High deviation from your historical profile."})
+            explanations.append({"feature": "Limit", "impact": "HIGH", "reason": f"Unusual Spike: High deviation from profile."})
         else:
-            explanations.append({"feature": "Limit", "impact": "SAFE", "reason": "Amount aligns with your behavioral DNA."})
+            explanations.append({"feature": "Limit", "impact": "SAFE", "reason": "Amount aligns with history."})
 
         if current_hour not in profile.typical_active_hours:
             rule_penalty += 0.2
-            explanations.append({"feature": "Time", "impact": "HIGH", "reason": f"Clock Anomaly: Request at {current_hour}:00 is an outlier."})
+            explanations.append({"feature": "Time", "impact": "HIGH", "reason": f"Clock Anomaly: Detected at {current_hour}:00."})
         else:
-            explanations.append({"feature": "Time", "impact": "SAFE", "reason": "Standard active window matches history."})
+            explanations.append({"feature": "Time", "impact": "SAFE", "reason": "Standard active window."})
 
         final_fraud_score = min(base_ai_score + rule_penalty, 1.0)
         status_action = 'blocked' if final_fraud_score >= 0.80 else 'flagged' if final_fraud_score >= 0.40 else 'approved'
 
-        # Log Data
         txn = Transaction.objects.create(user=user, amount=amount, merchant=data.get('recipient','Transfer'), status=status_action)
         FraudAnalysis.objects.create(transaction=txn, fraud_score=final_fraud_score, risk_level='high' if status_action=='blocked' else 'low', shap_explanations=explanations)
 
-        # CREATE NOTIFICATION IF RISK IS HIGH
         if status_action in ['blocked', 'flagged']:
             Notification.objects.create(
                 user=user,
                 title=f"Security Alert: {status_action.capitalize()}",
-                message=f"A transaction of ₦{amount:,.0f} to {txn.merchant} was {status_action} by the Ensemble Engine.",
+                message=f"A transaction to {txn.merchant} was {status_action} by the AI Ensemble.",
                 notif_type='fraud'
             )
 
@@ -260,30 +254,24 @@ class VerifyTransactionView(APIView):
             txn.save()
             HistoricalTransaction.objects.create(user=request.user, amount=txn.amount, description=f"Manually Authorized")
             train_user_models(request.user)
-            Notification.objects.create(user=request.user, title="AI Intelligence Updated", message="Pattern marked as safe for your profile.", notif_type='system')
+            Notification.objects.create(user=request.user, title="AI Intelligence Updated", message="Authorized pattern learned.", notif_type='system')
             return Response({"status": "success"})
         except:
-            return Response({"error": "Txn not found"}, status=404)
+            return Response({"error": "Failed"}, status=400)
 
 
 # --- 4. PUBLIC API GATEWAY ---
 
 class PublicAnalyzeView(APIView):
     permission_classes = [AllowAny]
-
     def post(self, request):
-        # 1. Authenticate via Key
         key_header = request.headers.get('X-Sentinel-Key')
-        if not key_header:
-            return Response({"error": "No API Key provided"}, status=401)
-        
         try:
             api_key_obj = APIKey.objects.get(key=key_header)
             user = api_key_obj.user
-        except APIKey.DoesNotExist:
+        except:
             return Response({"error": "Invalid API Key"}, status=401)
 
-        # 2. RUN AI MODELS
         data = request.data
         amount = float(data.get('amount', 0))
         current_hour = int(data.get('hour', datetime.now().hour))
@@ -296,7 +284,6 @@ class PublicAnalyzeView(APIView):
         try:
             input_df = pd.DataFrame([[amount, current_hour, merchant_risk]], columns=['amount', 'hour', 'merchant_risk'])
             global_prob = joblib.load(g_path).predict_proba(input_df)[0][1]
-            
             if os.path.exists(l_path):
                 local_pred = joblib.load(l_path).predict(input_df[['amount', 'hour']])[0]
                 local_score = 0.7 if local_pred == -1 else 0.1
@@ -305,23 +292,20 @@ class PublicAnalyzeView(APIView):
             
             final_score = (global_prob * 0.5) + (local_score * 0.5)
             status_action = 'blocked' if final_score > 0.7 else 'flagged' if final_score > 0.4 else 'approved'
-            
             return Response({
                 "status": status_action,
                 "fraud_probability": round(final_score * 100, 1),
-                "analyzed_by": "Sentinel Triple-Ensemble Engine",
                 "request_id": str(uuid.uuid4())[:8],
                 "owner": user.email
             })
         except Exception as e:
-            return Response({"error": f"Internal AI Failure: {str(e)}"}, status=500)
+            return Response({"error": str(e)}, status=500)
 
 
-# --- 5. LOGS & STATS VIEWS ---
+# --- 5. LOGS & STATS ---
 
 class RiskLogsView(APIView):
     permission_classes = [IsAuthenticated]
-
     def get(self, request):
         transactions = Transaction.objects.filter(user=request.user).order_by('-timestamp')
         log_data = []
@@ -329,12 +313,9 @@ class RiskLogsView(APIView):
             try:
                 analysis = txn.ai_analysis
                 log_data.append({
-                    "id": str(txn.id),
-                    "timestamp": txn.timestamp,
-                    "amount": float(txn.amount),
-                    "merchant": txn.merchant,
-                    "status": txn.status,
-                    "fraud_score": round(analysis.fraud_score * 100, 1),
+                    "id": str(txn.id), "timestamp": txn.timestamp, "amount": float(txn.amount), 
+                    "merchant": txn.merchant, "status": txn.status, 
+                    "fraud_score": round(analysis.fraud_score * 100, 1), 
                     "explanations": analysis.shap_explanations
                 })
             except: continue
@@ -346,38 +327,32 @@ class DNAStatsView(APIView):
         try:
             profile = request.user.behavioral_profile
             hour_data = [{"hour": f"{h:02d}:00", "value": 100 if h in profile.typical_active_hours else 20} for h in range(24)]
-            category_counts = HistoricalTransaction.objects.filter(user=request.user).values('category').annotate(value=Count('category')).order_by('-value')
-            merchant_data = [{"name": item['category'] if item['category'] else "Others", "value": item['value']} for item in category_counts]
-            
+            cats = HistoricalTransaction.objects.filter(user=request.user).values('category').annotate(value=Count('category')).order_by('-value')
             return Response({
                 "avg_amount": float(profile.avg_transaction_amount),
                 "max_amount": float(profile.max_transaction_amount),
                 "active_hours": hour_data,
-                "merchants": merchant_data if merchant_data else [{"name": "No Data", "value": 100}],
-                "is_active": profile.is_profile_active,
-                "last_updated": profile.last_updated
+                "merchants": [{"name": c['category'] if c['category'] else "Other", "value": c['value']} for c in cats],
+                "is_active": profile.is_profile_active
             })
         except: return Response({"error": "No profile"}, status=404)
 
 class DashboardSummaryView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        user = request.user
+        u = request.user
         try:
-            profile = user.behavioral_profile
-            history_count = HistoricalTransaction.objects.filter(user=user).count()
-            dna_strength = min(int((history_count / 50) * 100), 100) if history_count > 0 else 0
-            blocked = Transaction.objects.filter(user=user, status='blocked').count()
-            recent = Transaction.objects.filter(user=user).order_by('-timestamp')[:3]
-            
+            p = u.behavioral_profile
+            h_count = HistoricalTransaction.objects.filter(user=u).count()
+            name = f"{u.first_name} {u.last_name}" if u.first_name else f"{u.email.split('@')[0]}"
             return Response({
-                "is_active": profile.is_profile_active,
-                "dna_strength": dna_strength,
-                "total_simulations": Transaction.objects.filter(user=user).count(),
-                "threats_blocked": blocked,
-                "recent_activity": [{"id": str(t.id)[:8], "merchant": t.merchant, "amount": float(t.amount), "status": t.status} for t in recent],
-                "user_name": f"{user.first_name} {user.last_name}" if user.first_name else f"{user.email.split('@')[0]}",
-                "avatar": user.avatar.url if user.avatar else None
+                "is_active": p.is_profile_active,
+                "dna_strength": min(int((h_count / 50) * 100), 100),
+                "total_simulations": Transaction.objects.filter(user=u).count(),
+                "threats_blocked": Transaction.objects.filter(user=u, status='blocked').count(),
+                "recent_activity": [{"id": str(t.id)[:8], "merchant": t.merchant, "amount": float(t.amount), "status": t.status} for t in Transaction.objects.filter(user=u).order_by('-timestamp')[:3]],
+                "user_name": name,
+                "avatar": u.avatar.url if u.avatar else None
             })
         except: return Response({"error": "Dashboard failed"}, status=500)
 
@@ -418,7 +393,6 @@ class NotificationListView(APIView):
         return Response([{
             "id": n.id, "title": n.title, "message": n.message, "type": n.notif_type, "is_read": n.is_read, "time": n.created_at
         } for n in notifs])
-
     def post(self, request):
         Notification.objects.filter(user=request.user).update(is_read=True)
         return Response({"status": "read"})

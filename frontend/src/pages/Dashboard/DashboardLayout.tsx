@@ -39,18 +39,22 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const fetchData = async () => {
     try {
       const token = localStorage.getItem('accessToken');
+      if (!token) { navigate('/login'); return; }
       const [uRes, nRes] = await Promise.all([
         axios.get('http://127.0.0.1:8000/api/v1/dashboard/summary/', { headers: { Authorization: `Bearer ${token}` } }),
         axios.get('http://127.0.0.1:8000/api/v1/notifications/', { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setUserData(uRes.data);
       setNotifications(nRes.data);
-    } catch (e) { }
+    } catch (e: any) {
+        if (e.response?.status === 401) { localStorage.clear(); navigate('/login'); }
+    }
   };
 
   const fetchNotifs = async () => {
     try {
       const token = localStorage.getItem('accessToken');
+      if (!token) return;
       const res = await axios.get('http://127.0.0.1:8000/api/v1/notifications/', { headers: { Authorization: `Bearer ${token}` } });
       setNotifications(res.data);
     } catch (e) { }
@@ -72,10 +76,10 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   const menuItems = [
     { name: 'Overview', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'Behavioral DNA', path: '/dashboard/dna', icon: <Fingerprint size={20} /> },
-    { name: 'Simulator', path: '/dashboard/simulator', icon: <Zap size={20} /> },
-    { name: 'Risk Logs', path: '/dashboard/logs', icon: <History size={20} /> },
-    { name: 'Developer Hub', path: '/dashboard/developer', icon: <Code2 size={20} /> },
+    { name: 'Behavioral DNA', path: '/dna', icon: <Fingerprint size={20} /> },
+    { name: 'Simulator', path: '/simulator', icon: <Zap size={20} /> },
+    { name: 'Risk Logs', path: '/logs', icon: <History size={20} /> },
+    { name: 'Developer Hub', path: '/developer', icon: <Code2 size={20} /> },
   ];
 
   return (
@@ -86,7 +90,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
           <button className={styles.desktopToggle} onClick={() => setIsCollapsed(!isCollapsed)}>{isCollapsed ? <PanelLeftOpen size={22}/> : <PanelLeftClose size={22}/>}</button>
           <button className={styles.mobileCloseBtn} onClick={() => setIsMobileOpen(false)}><X size={24}/></button>
         </div>
-        <nav className={styles.nav}>{menuItems.map((item) => (<Link key={item.path} to={item.path} className={`${styles.navItem} ${location.pathname === item.path ? styles.active : ''}`} onClick={() => setIsMobileOpen(false)}><div className={styles.iconWrapper}>{item.icon}</div>{!isCollapsed && <span>{item.name}</span>}</Link>))}</nav>
+        <nav className={styles.nav}>{menuItems.map((item) => (<Link key={item.path} to={`/dashboard${item.path}`} className={`${styles.navItem} ${location.pathname === `/dashboard${item.path}` ? styles.active : ''}`} onClick={() => setIsMobileOpen(false)}><div className={styles.iconWrapper}>{item.icon}</div>{!isCollapsed && <span>{item.name}</span>}</Link>))}</nav>
         <div className={styles.sidebarFooter}><Link to="/dashboard/settings" className={styles.navItem} onClick={() => setIsMobileOpen(false)}><div className={styles.iconWrapper}><Settings size={20}/></div>{!isCollapsed && <span>Settings</span>}</Link><button onClick={() => {localStorage.clear(); navigate('/login');}} className={styles.logoutBtn}><div className={styles.iconWrapper}><LogOut size={20}/></div>{!isCollapsed && <span>Sign Out</span>}</button></div>
       </motion.aside>
 
@@ -94,18 +98,31 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
         <header className={styles.topBar}>
           <div className={styles.topBarLeft}>
             <button className={styles.mobileHamburger} onClick={() => setIsMobileOpen(true)}><Menu size={24}/></button>
-            <div className={styles.mobileLogo}><ShieldCheck size={22} color="#0984e3" /><span>Sentinel</span></div>
-            <div className={styles.tickerContainer}><AnimatePresence mode="wait"><motion.p key={currentSlide} initial={{ y: 15, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -15, opacity: 0 }} className={styles.tickerText}>{infoSlides[currentSlide]}</motion.p></AnimatePresence></div>
+            <div className={styles.tickerContainer}>
+              <AnimatePresence mode="wait"><motion.p key={currentSlide} initial={{ y: 15, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -15, opacity: 0 }} className={styles.tickerText}>{infoSlides[currentSlide]}</motion.p></AnimatePresence>
+            </div>
           </div>
           <div className={styles.topBarRight}>
             <div className={`${styles.shieldStatus} ${userData?.is_active ? styles.shieldActive : styles.shieldIdle}`}>{userData?.is_active ? <Shield size={18} /> : <ShieldQuestion size={18} />}<span>{userData?.is_active ? 'Identity Verified' : 'Unverified'}</span></div>
             <div className={styles.notifWrapper} ref={notifRef}><button className={styles.notificationBtn} onClick={toggleNotifs}><Bell size={20} />{unreadCount > 0 && <span className={styles.notificationBadge}>{unreadCount}</span>}</button>
-                <AnimatePresence>{isNotifOpen && (<motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className={styles.notifDropdown}><div className={styles.notifHeader}><h4>Alerts</h4><span>{unreadCount} new</span></div><div className={styles.notifList}>{notifications.length > 0 ? notifications.map(n => (<div key={n.id} className={`${styles.notifItem} ${!n.is_read ? styles.unread : ''}`}><div className={`${styles.notifIcon} ${styles[n.type]}`}>{n.type==='fraud'?<ShieldAlert size={16}/>:<Info size={16}/>}</div><div className={styles.notifBody}><p className={styles.notifTitle}>{n.title}</p><p className={styles.notifMsg}>{n.message}</p></div></div>)) : <div className={styles.emptyNotifs}><Check size={24}/> All caught up</div>}</div></motion.div>)}</AnimatePresence>
+                <AnimatePresence>{isNotifOpen && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className={styles.notifDropdown}>
+                        <div className={styles.notifHeader}><h4>Alerts</h4><span>{unreadCount} new</span></div>
+                        <div className={styles.notifList}>
+                            {notifications.length > 0 ? notifications.map(n => (
+                                <div key={n.id} className={`${styles.notifItem} ${!n.is_read ? styles.unread : ''}`}><div className={`${styles.notifIcon} ${styles[n.type]}`}>{n.type==='fraud'?<ShieldAlert size={16}/>:<Info size={16}/>}</div><div className={styles.notifBody}><p className={styles.notifTitle}>{n.title}</p><p className={styles.notifMsg}>{n.message}</p></div></div>
+                            )) : <div className={styles.emptyNotifs}><Check size={24}/> All caught up</div>}
+                        </div>
+                    </motion.div>
+                )}</AnimatePresence>
             </div>
             <div className={styles.divider}></div>
             <button className={styles.profileDropdown} onClick={() => navigate('/dashboard/settings')}>
-               <div className={styles.userInfo}><span className={styles.userName}>{userData ? `${userData.user_name}` : 'Syncing...'}</span></div>
-               <div className={`${styles.avatarContainer} ${userData?.avatar ? styles.hasStory : ''}`}><div className={styles.avatarRing}></div><div className={styles.avatarCircle}>{userData?.avatar ? <img src={userData.avatar.startsWith('http') ? userData.avatar : `http://127.0.0.1:8000${userData.avatar}`} alt="Avatar" className={styles.avatarImg} /> : <User size={18}/>}</div></div>
+               <div className={styles.userInfo}><span className={styles.userName}>{userData ? userData.user_name : 'Loading...'}</span></div>
+               <div className={`${styles.avatarContainer} ${userData?.avatar ? styles.hasStory : ''}`}>
+                  <div className={styles.avatarRing}></div>
+                  <div className={styles.avatarCircle}>{userData?.avatar ? <img src={userData.avatar.startsWith('http') ? userData.avatar : `http://127.0.0.1:8000${userData.avatar}`} alt="Avatar" className={styles.avatarImg} /> : <User size={18}/>}</div>
+               </div>
             </button>
           </div>
         </header>
